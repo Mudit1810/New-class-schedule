@@ -1,0 +1,283 @@
+/* Teacher Timetable Specific CSS */
+.timetable-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.timetable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.timetable-header.professional {
+    background: linear-gradient(to right, #2c3e50, #4a6491);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.institution-logo {
+    margin-right: 20px;
+}
+
+.logo-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-text {
+    flex-grow: 1;
+}
+
+.header-text h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.header-subtitle {
+    margin: 5px 0;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.header-academic-year {
+    margin: 5px 0;
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+.approval-status {
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.approval-status i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.approval-status.approved {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.timetable th {
+    background-color: #3f51b5;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid #d1d1d1;
+}
+
+.timetable td {
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+    height: 80px;
+}
+
+.time-header {
+    width: 100px;
+}
+
+.time-cell {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.time-range {
+    font-size: 14px;
+    color: #555;
+}
+
+.schedule-cell {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.schedule-cell:hover {
+    background-color: #f9f9f9;
+}
+
+.subject-block {
+    background-color: #bbdefb;
+    border-radius: 6px;
+    padding: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.subject-block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.subject-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 15px;
+    color: #1565c0;
+}
+
+.class-details {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    gap: 3px;
+}
+
+.class-badge, .room-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.class-badge {
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #333;
+}
+
+.room-badge {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.empty-slot {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.no-classes {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.message-card {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 25px;
+    display: inline-block;
+}
+
+.message-card i {
+    font-size: 40px;
+    color: #607d8b;
+    margin-bottom: 15px;
+}
+
+.message-card h3 {
+    margin: 10px 0;
+    font-size: 22px;
+    color: #455a64;
+}
+
+.message-card p {
+    color: #78909c;
+}
+
+.action-buttons {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.btn i {
+    margin-right: 5px;
+}
+
+.primary-btn {
+    background-color: #3f51b5;
+    color: white;
+}
+
+.primary-btn:hover {
+    background-color: #303f9f;
+}
+
+.secondary-btn {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.secondary-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .timetable-container {
+        padding: 10px;
+    }
+    
+    .timetable th, .timetable td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .subject-name {
+        font-size: 12px;
+    }
+    
+    .class-details {
+        font-size: 10px;
+    }
+    
+    .time-header {
+        width: 60px;
+    }
+}

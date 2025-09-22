@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='teacher-timetable.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+    .teacher-hours {
+        margin-top: 10px;
+        display: inline-block;
+        padding: 5px 15px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .hours-label {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    
+    .hours-value {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    
+    .hours-warning {
+        color: #ff5252;
+        margin-left: 10px;
+        font-weight: bold;
+    }
+    
+    .hours-full {
+        color: #4caf50;
+        margin-left: 10px;
+    }
+    
+    .hours-available {
+        color: #2196f3;
+        margin-left: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container timetable-container">
+    <div class="timetable-header professional">
+        <div class="header-content">
+            <div class="institution-logo">
+                <!-- Placeholder for logo -->
+                <div class="logo-placeholder"></div>
+            </div>
+            <div class="header-text">
+                <h2>{{ teacher.name }}'s Schedule</h2>
+                <p class="header-subtitle">{{ teacher.subject }} Teacher</p>
+                <p class="header-academic-year">Academic Year: 2023 - 24</p>
+                <div class="teacher-hours">
+                    <p><span class="hours-label">Weekly Hours:</span> 
+                        <span class="hours-value">{{ current_hours }}/{{ teacher.weekly_hours }}</span>
+                        {% if current_hours > teacher.weekly_hours %}
+                        <span class="hours-warning">⚠️ Over limit</span>
+                        {% elif current_hours == teacher.weekly_hours %}
+                        <span class="hours-full">✓ Full schedule</span>
+                        {% else %}
+                        <span class="hours-available">{{ teacher.weekly_hours - current_hours }} hours available</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if active_timetable %}
+    <div class="approval-status approved">
+        <i class="fas fa-check-circle"></i> Schedule from approved timetable
+    </div>
+    {% endif %}
+    
+    {% if not teacher_schedule %}
+    <div class="no-classes">
+        <div class="message-card">
+            <i class="fas fa-info-circle"></i>
+            <h3>No Classes Assigned</h3>
+            <p>{{ teacher.name }} is not currently assigned to any classes in the active timetable.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="timetable-view">
+        <table class="timetable">
+            <thead>
+                <tr>
+                    <th class="time-header">Time</th>
+                    {% for day in days %}
+                    <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for start_time, end_time in time_slots %}
+                <tr>
+                    <td class="time-cell">
+                        <div class="time-range">{{ start_time }} - {{ end_time }}</div>
+                    </td>
+                    {% for day in days %}
+                    <td class="schedule-cell">
+                        {% set slot_key = start_time + "-" + end_time %}
+                        {% if day in teacher_schedule and slot_key in teacher_schedule[day] %}
+                        <div class="subject-block">
+                            <div class="subject-name">{{ teacher_schedule[day][slot_key]['course'] }}</div>
+                            <div class="class-details">
+                                <span class="class-badge">{{ teacher_schedule[day][slot_key]['class'] }}</span>
+                                <span class="room-badge">Room: {{ teacher_schedule[day][slot_key]['room'] }}</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-slot">
+                            <span>Free Period</span>
+                        </div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('teachers') }}" class="btn secondary-btn">
+            <i class="fas fa-arrow-left"></i> Back to Teachers
+        </a>
+    </div>
+</div>
+{% endblock %}

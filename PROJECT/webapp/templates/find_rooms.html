@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='find_rooms.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="find-rooms-container">
+    <h1 class="main-title">Find Available Rooms</h1>
+    
+    <div class="info-box">
+        <p>
+            This tool finds rooms that are free for the <strong>entire duration</strong> between the selected start and end times. 
+            For example, if you select 9:00-12:00, it will show rooms with no scheduled classes during that entire 3-hour block.
+        </p>
+    </div>
+    
+    <div class="search-form">
+        <form method="post">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="day">Day of Week:</label>
+                    <select name="day" id="day" required>
+                        <option>Monday</option>
+                        <option>Tuesday</option>
+                        <option>Wednesday</option>
+                        <option>Thursday</option>
+                        <option>Friday</option>
+                    </select>
+                </div>
+                
+                <div class="input-field">
+                    <label for="start_time">Start Time:</label>
+                    <select name="start_time" id="start_time" required>
+                        <option value="08:30">08:30</option>
+                        <option value="09:45">09:45</option>
+                        <option value="11:00">11:00</option>
+                        <option value="12:15">12:15</option>
+                        <option value="14:00">14:00</option>
+                        <option value="15:15">15:15</option>
+                        <option value="16:30">16:30</option>
+                    </select>
+                </div>
+                
+                <div class="input-field">
+                    <label for="end_time">End Time:</label>
+                    <select name="end_time" id="end_time" required>
+                        <option value="09:30">09:30</option>
+                        <option value="10:45">10:45</option>
+                        <option value="12:00">12:00</option>
+                        <option value="13:15">13:15</option>
+                        <option value="15:00">15:00</option>
+                        <option value="16:15">16:15</option>
+                        <option value="17:30">17:30</option>
+                    </select>
+                </div>
+                
+                <button class="submit-btn" type="submit">Find Available Rooms</button>
+            </div>
+            
+            <div id="time-range-display" class="time-range-display">
+                <!-- JavaScript will update this -->
+            </div>
+            
+            <div id="availability-hint" class="availability-hint" style="display:none">
+                <!-- JavaScript will update this -->
+            </div>
+        </form>
+    </div>
+    
+    {% if available is defined %}
+    <div class="results-section">
+        <h3 class="results-title">
+            Available Rooms 
+            <span class="results-count">{{ available|length }}</span>
+        </h3>
+        
+        {% if available|length > 0 %}
+        <div class="room-list">
+            {% for room in available %}
+            <div class="room-card {{ 'lab-room' if 'Lab' in room.name }}">
+                <h4 class="room-name">{{ room.name }}</h4>
+                <p class="room-capacity">Capacity: {{ room.capacity }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No rooms are available for the entire duration. Try selecting a shorter time period.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <a href="/" class="back-btn">Back to Home</a>
+</div>
+
+<script>
+// Show real-time availability hints when fields change
+async function updateAvailabilityHint() {
+    const day = document.getElementById('day').value;
+    const start = document.getElementById('start_time').value;
+    const end = document.getElementById('end_time').value;
+    
+    // Update time range display
+    const timeRangeDisplay = document.getElementById('time-range-display');
+    if (start && end) {
+        // Calculate duration
+        const [startHours, startMinutes] = start.split(':').map(Number);
+        const [endHours, endMinutes] = end.split(':').map(Number);
+        
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+        
+        let durationMinutes = endTotalMinutes - startTotalMinutes;
+        // Handle cases where end time might be earlier than start time
+        if (durationMinutes <= 0) {
+            timeRangeDisplay.innerHTML = `<span style="color:#d9534f;">End time must be after start time</span>`;
+            return;
+        }
+        
+        const durationHours = Math.floor(durationMinutes / 60);
+        durationMinutes = durationMinutes % 60;
+        
+        let durationText = '';
+        if (durationHours > 0) {
+            durationText += `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
+        }
+        if (durationMinutes > 0) {
+            durationText += `${durationHours > 0 ? ' and ' : ''}${durationMinutes} minute${durationMinutes !== 1 ? 's' : ''}`;
+        }
+        
+        timeRangeDisplay.textContent = `Searching for rooms available for ${durationText} (${start} to ${end})`;
+    }
+    
+    if (!(day && start && end)) return;
+    
+    try {
+        const res = await fetch(`/api/availability?day=${encodeURIComponent(day)}&start_time=${encodeURIComponent(start)}&end_time=${encodeURIComponent(end)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const availableCount = data.rooms.filter(r => r.available).length;
+        let hint = document.getElementById('availability-hint');
+        if (hint && availableCount > 0) {
+            hint.textContent = `${availableCount} rooms are currently scheduled for this exact time slot`;
+            hint.style.display = 'block';
+        } else if (hint) {
+            hint.style.display = 'none';
+        }
+    } catch (e) { 
+        console.error(e); 
+    }
+}
+
+// Update on initial load and when fields change
+['day','start_time','end_time'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('change', updateAvailabilityHint);
+    }
+});
+
+// Run on page load to set initial values
+document.addEventListener('DOMContentLoaded', updateAvailabilityHint);
+</script>
+{% endblock %}

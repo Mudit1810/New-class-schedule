@@ -1,0 +1,41 @@
+/* Additional styling for room display fix */
+.room-badge {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    color: rgb(191, 219, 254) !important;
+    padding: 3px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+    margin-top: 5px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.room-info {
+    margin-top: 5px !important;
+    text-align: center !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.compact-cell {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 90px !important;
+    height: 100% !important;
+    padding: 8px !important;
+}
+
+/* Ensure the room icon is visible */
+.room-badge::before {
+    content: "📍";
+    margin-right: 3px;
+}
+
+/* Better visibility for timetable cells */
+.timetable-table td {
+    vertical-align: top !important;
+    height: 100px !important;
+}

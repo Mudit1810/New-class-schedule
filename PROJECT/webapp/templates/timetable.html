@@ -1,0 +1,413 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    {% if theme == 'dark' %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.documentElement.classList.add('dark-theme');
+        });
+    </script>
+    <!-- Add dark timetable theme CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-timetable.css') }}">
+    {% endif %}
+    
+    <!-- CSRF Token for AJAX requests -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <!-- Add drag and drop CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='drag-drop.css') }}">
+    <!-- Add suggestions CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='suggestions.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container timetable-container">
+    <div class="timetable-header professional">
+        <div class="header-content">
+            <div class="institution-logo">
+                <!-- Placeholder for logo -->
+                <div class="logo-placeholder"></div>
+            </div>
+            <div class="header-text">
+                <h2>{{ college_name|default('University College') }} TIMETABLE</h2>
+                <p class="header-subtitle">Academic Schedule</p>
+                <p class="header-academic-year">Academic Year: 2023 - 24</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if is_approved %}
+    <div class="approval-status approved">
+        <i class="fas fa-check-circle"></i> This timetable has been approved by {{ active_timetable.approver.username }} on {{ active_timetable.approved_at.strftime('%d %b %Y, %H:%M') }}
+        {% if is_coordinator %}
+        <a href="{{ url_for('generate_timetable_route', regenerate=true) }}" class="btn secondary-btn">Generate New Timetable</a>
+        {% endif %}
+    </div>
+    {% elif is_coordinator %}
+    <div class="approval-actions">
+        <h3>Timetable Approval</h3>
+        <p>As a coordinator, you can approve or reject this timetable.</p>
+        <div class="action-buttons">
+            <button type="button" class="btn gradient-btn" id="approve-btn"><i class="fas fa-check"></i> Approve Timetable</button>
+            <button type="button" class="btn secondary-btn" id="reject-btn"><i class="fas fa-times"></i> Reject & Regenerate</button>
+        </div>
+        
+        <!-- Approval Form Modal -->
+        <div id="approval-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Approve Timetable</h3>
+                <form id="approval-form" action="{{ url_for('approve_timetable') }}" method="post">
+                    <div class="form-group">
+                        <label for="name">Timetable Name:</label>
+                        <input type="text" id="name" name="name" value="Timetable {{ current_date_time }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" rows="3">Approved timetable for current semester.</textarea>
+                    </div>
+                    <button type="submit" class="btn gradient-btn">Confirm Approval</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Rejection Form Modal -->
+        <div id="rejection-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Reject Timetable</h3>
+                <form id="rejection-form" action="{{ url_for('reject_timetable') }}" method="post">
+                    <div class="form-group">
+                        <label for="reason">Reason for rejection:</label>
+                        <textarea id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn secondary-btn">Confirm Rejection</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card" style="margin:16px 0; padding:12px;">
+        <form id="day-filter-form" method="get" action="{{ url_for('generate_timetable_route') }}" class="input-row" style="align-items:center; gap:12px; flex-wrap:wrap;">
+            <label><strong>View:</strong></label>
+            <label style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="view" value="day" {% if view_mode != 'week' %}checked{% endif %} onchange="this.form.submit()"> Day
+            </label>
+            <label style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="view" value="week" {% if view_mode == 'week' %}checked{% endif %} onchange="this.form.submit()"> Week
+            </label>
+            {% if view_mode != 'week' %}
+            <div id="day-picker">
+                <label for="day-select" style="margin-left:12px;"><strong>Day:</strong></label>
+                <select id="day-select" name="day" onchange="this.form.submit()">
+                    {% for d in all_days %}
+                    <option value="{{ d }}" {% if d == selected_day %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <span style="opacity:0.7;">{% if view_mode == 'week' %}Showing full week{% else %}Defaulting to Today ({{ selected_day }}){% endif %}</span>
+        </form>
+    </div>
+
+    {% for class_name, grid in timetable_data.items() %}
+    <h3 class="class-heading">{{ class_name }}</h3>
+    <div class="card timetable-card" style="overflow-x:auto; margin-bottom:32px;">
+        <table class="timetable-table timetable-colored">
+            <thead>
+                <tr>
+                    <th class="day-column">Day</th>
+                    {% for slot in time_slots %}
+                    <th class="time-column">{{ slot[0]|replace(':00', '') }}-{{ slot[1]|replace(':00', '') }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td><b>{{ day }}</b></td>
+                    {% for slot in time_slots %}
+                    {% set cell = grid[slot][day] %}
+                    {% set slot_key = slot[0] + "-" + slot[1] %}
+                    <td class="multi-course-cell {{ cell|course_color_class if cell }} timetable-cell schedule-cell" data-day="{{ day }}" data-start="{{ slot[0] }}" data-end="{{ slot[1] }}" data-time="{{ slot_key }}" id="cell-{{ class_name }}-{{ day }}-{{ slot_key }}">
+                        {% if cell %}
+                            {% if cell is string %}
+                                {% set parts = cell.split('<br>') %}
+                                {% if parts|length >= 3 %}
+                                <div class="compact-cell subject-block" data-course="{{ parts[0] }}" data-teacher="{{ parts[1] }}" data-room="{{ parts[2] }}" data-class="{{ class_name }}" id="block-{{ class_name }}-{{ day }}-{{ slot_key }}">
+                                    <span class="course-name subject-name"><a href="{{ url_for('course_syllabus', course_name=parts[0]) }}" class="syllabus-link" title="Open syllabus">{{ parts[0] }}</a></span>
+                                    <span class="teacher-name">{{ parts[1] }}</span>
+                                    <div class="class-details">
+                                        <span class="class-badge">{{ class_name }}</span>
+                                    </div>
+                                    <div class="room-info">
+                                        <span class="room-badge">
+                                            {{ parts[2] }}
+                                            <a href="#" class="change-room-link" data-class="{{ class_name }}" 
+                                              data-course="{{ parts[0] }}" data-day="{{ day }}" 
+                                              data-slot="{{ slot_key }}" title="Change Room">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="subject-block" data-course="{{ cell }}" data-class="{{ class_name }}" id="block-{{ class_name }}-{{ day }}-{{ slot_key }}">
+                                    {{ cell|replace('<br>', ' - ')|safe }}
+                                </div>
+                                {% endif %}
+                            {% elif cell is not iterable %}
+                                <div class="compact-cell subject-block" data-course="{{ cell }}" data-class="{{ class_name }}" id="block-{{ class_name }}-{{ day }}-{{ slot_key }}">
+                                    <span class="course-name subject-name"><a href="{{ url_for('course_syllabus', course_name=cell) }}" class="syllabus-link" title="Open syllabus">{{ cell }}</a></span>
+                                    <div class="class-details">
+                                        <span class="class-badge">{{ class_name }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {% for course in cell %}
+                                    <div class="course-entry subject-block {{ loop.index0|course_color_class }}" 
+                                         data-course="{{ (course.split('<br>')[0]) if course is string }}"
+                                         data-teacher="{{ (course.split('<br>')[1]) if course is string and (course.split('<br>')|length)>=2 }}"
+                                         data-room="{{ (course.split('<br>')[2]) if course is string and (course.split('<br>')|length)>=3 }}"
+                                         data-class="{{ class_name }}"
+                                         id="block-{{ class_name }}-{{ day }}-{{ slot_key }}-{{ loop.index0 }}">
+                                        {% if course is string %}
+                                            {% set parts = course.split('<br>') %}
+                                            {% if parts|length >= 3 %}
+                                            <span class="course-name subject-name"><a href="{{ url_for('course_syllabus', course_name=parts[0]) }}" class="syllabus-link" title="Open syllabus">{{ parts[0] }}</a></span>
+                                            <span class="teacher-name">{{ parts[1][:10] }}</span>
+                                            <div class="class-details">
+                                                <span class="class-badge">{{ class_name }}</span>
+                                            </div>
+                                            <div class="room-info">
+                                                <span class="room-badge">
+                                                    {{ parts[2] }}
+                                                    <a href="#" class="change-room-link" data-class="{{ class_name }}" 
+                                                      data-course="{{ parts[0] }}" data-day="{{ day }}" 
+                                                      data-slot="{{ slot_key }}" title="Change Room">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                            {% else %}
+                                            {{ course|replace('<br>', ' - ')|safe }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="course-name"><a href="{{ url_for('course_syllabus', course_name=course) }}" class="syllabus-link" title="Open syllabus">{{ course }}</a></span>
+                                        {% endif %}
+                                    </div>
+                                    {% if not loop.last %}<hr class="course-divider">{% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <span style="color:#ccc;">-</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="legend">
+            <h4>Legend</h4>
+            <table class="legend-table">
+                <tr>
+                    <th>Course</th>
+                    <th>Room</th>
+                    <th>Instructor</th>
+                </tr>
+                {% set seen_courses = {} %}
+                {% for slot in time_slots %}
+                    {% for day in days %}
+                        {% set cell = grid[slot][day] %}
+                        {% if cell %}
+                            {% if cell is string %}
+                                {% set parts = cell.split('<br>') %}
+                                {% if parts|length >= 3 and parts[0] not in seen_courses %}
+                                {% set _ = seen_courses.update({parts[0]: True}) %}
+                                <tr>
+                                    <td><span class="legend-color {{ cell|course_color_class }}"></span> {{ parts[0] }}</td>
+                                    <td>{{ parts[2] }}</td>
+                                    <td>{{ parts[1] }}</td>
+                                </tr>
+                                {% endif %}
+                            {% elif cell is not iterable and cell not in seen_courses %}
+                                {% set _ = seen_courses.update({cell: True}) %}
+                                <tr>
+                                    <td><span class="legend-color {{ cell|course_color_class }}"></span> {{ cell }}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    <a href="/" class="btn gradient-btn" style="margin-top:24px;display:inline-block;">Back to Home</a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal handling for approval/rejection
+    const approveBtn = document.getElementById('approve-btn');
+    const rejectBtn = document.getElementById('reject-btn');
+    const approvalModal = document.getElementById('approval-modal');
+    const rejectionModal = document.getElementById('rejection-modal');
+    const closeButtons = document.querySelectorAll('.close');
+    
+    // Set current datetime in the timetable name
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+    
+    if (document.getElementById('name')) {
+        document.getElementById('name').value = `Timetable ${formattedDate}`;
+    }
+    
+    // Show approval modal
+    if (approveBtn) {
+        approveBtn.addEventListener('click', function() {
+            approvalModal.style.display = 'block';
+        });
+    }
+    
+    // Show rejection modal
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', function() {
+            rejectionModal.style.display = 'block';
+        });
+    }
+    
+    // Close modals when clicking X
+    closeButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            approvalModal.style.display = 'none';
+            rejectionModal.style.display = 'none';
+            roomChangeModal.style.display = 'none';
+        });
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target == approvalModal) {
+            approvalModal.style.display = 'none';
+        }
+        if (event.target == rejectionModal) {
+            rejectionModal.style.display = 'none';
+        }
+        if (event.target == roomChangeModal) {
+            roomChangeModal.style.display = 'none';
+        }
+    });
+    
+    // Handle form submissions via AJAX
+    const approvalForm = document.getElementById('approval-form');
+    const rejectionForm = document.getElementById('rejection-form');
+    
+    if (approvalForm) {
+        approvalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(approvalForm);
+            
+            fetch(approvalForm.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            });
+        });
+    }
+    
+    if (rejectionForm) {
+        rejectionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(rejectionForm);
+            
+            fetch(rejectionForm.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            });
+        });
+    }
+    
+    // Handle room change links
+    const roomChangeLinks = document.querySelectorAll('.change-room-link');
+    
+    roomChangeLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Extract data attributes
+            const className = this.getAttribute('data-class');
+            const courseName = this.getAttribute('data-course');
+            const day = this.getAttribute('data-day');
+            const timeSlot = this.getAttribute('data-slot');
+            
+            // Redirect to change room page with pre-filled values
+            window.location.href = `/change_room?class=${encodeURIComponent(className)}&course=${encodeURIComponent(courseName)}&day=${encodeURIComponent(day)}&time_slot=${encodeURIComponent(timeSlot)}`;
+        });
+    });
+
+    // Simple hover popover for timetable cells
+    const tooltip = document.createElement('div');
+    tooltip.style.position = 'fixed';
+    tooltip.style.padding = '8px 12px';
+    tooltip.style.background = 'var(--card-bg, #111827)';
+    tooltip.style.color = 'var(--text, #e5e7eb)';
+    tooltip.style.border = '1px solid var(--border, #374151)';
+    tooltip.style.borderRadius = '8px';
+    tooltip.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+    tooltip.style.fontSize = '12px';
+    tooltip.style.zIndex = '1000';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.display = 'none';
+    document.body.appendChild(tooltip);
+
+    function showTooltip(e, html) {
+        tooltip.innerHTML = html;
+        tooltip.style.left = (e.clientX + 12) + 'px';
+        tooltip.style.top = (e.clientY + 12) + 'px';
+        tooltip.style.display = 'block';
+    }
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    document.querySelectorAll('.timetable-cell .compact-cell, .timetable-cell .course-entry').forEach(el => {
+        el.addEventListener('mousemove', (e) => {
+            const course = el.getAttribute('data-course') || '';
+            const teacher = el.getAttribute('data-teacher') || '';
+            const room = el.getAttribute('data-room') || '';
+            const syllabusUrl = el.querySelector('.syllabus-link')?.getAttribute('href') || '#';
+            const html = `<div><strong>${course}</strong></div>`+
+                         (teacher ? `<div>Teacher: ${teacher}</div>` : '')+
+                         (room ? `<div><span class="room-badge">${room}</span></div>` : '')+
+                         `<div><a href="${syllabusUrl}" style="color:#60a5fa;">View syllabus</a></div>`;
+            showTooltip(e, html);
+        });
+        el.addEventListener('mouseleave', hideTooltip);
+    });
+});
+</script>
+
+{% if is_coordinator %}
+<!-- Include drag and drop functionality for admin/coordinator users only -->
+<script src="{{ url_for('static', filename='drag-drop-timetable.js') }}"></script>
+{% endif %}
+
+{% endblock content %}

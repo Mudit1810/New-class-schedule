@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .teacher-table .weekly-hours {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        background-color: #f0f7ff;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: #3b82f6;
+        border: 1px solid #d1e3ff;
+    }
+    
+    .dark-theme .teacher-table .weekly-hours {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+    
+    .teacher-table .weekly-hours i {
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <h1>Teachers Directory</h1>
+    <p><b>Debug Info:</b> Template received {{ teachers|length if teachers else 0 }} teachers</p>
+    <div class="table-container">
+        <table class="teacher-table">
+            <thead>
+                <tr>
+                    <th>Teacher ID</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Weekly Hours</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.id }}</td>
+                    <td>
+                        <div class="teacher-name-cell">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <a href="{{ url_for('teacher_timetable', teacher_id=teacher.id) }}">{{ teacher.name }}</a>
+                        </div>
+                    </td>
+                    <td>{{ teacher.subject }}</td>
+                    <td>
+                        <span class="weekly-hours">
+                            <i class="far fa-clock"></i>
+                            {{ teacher.weekly_hours }} hours
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('edit_teacher', teacher_id=teacher.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No teachers registered.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

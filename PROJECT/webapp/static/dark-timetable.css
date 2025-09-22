@@ -1,0 +1,241 @@
+/* Enhanced Dark Theme for Timetable */
+
+/* Timetable dark theme enhancements */
+.dark-theme .timetable-table {
+    background-color: #111827;
+    border-radius: 10px;
+    border: 1px solid #374151;
+    overflow: hidden;
+}
+
+.dark-theme .timetable-table th {
+    background-color: #1e2133;
+    color: #e5e7eb;
+    border-color: #374151;
+    padding: 12px 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.dark-theme .timetable-table td {
+    background-color: #111827;
+    border-color: #374151;
+    height: 90px;
+    transition: background-color 0.2s;
+}
+
+.dark-theme .timetable-table td:first-child {
+    background-color: #1e2133;
+    color: #e5e7eb;
+}
+
+.dark-theme .timetable-table tr:nth-child(odd) td {
+    background-color: rgba(30, 33, 51, 0.3);
+}
+
+.dark-theme .timetable-table td:not(:empty):hover {
+    background-color: rgba(55, 65, 81, 0.4);
+}
+
+/* Subject blocks in dark theme */
+.dark-theme .subject-block {
+    background-color: #1e293b;
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Room info styling to match the screenshot */
+.dark-theme .subject-block .room-info {
+    margin-top: 6px;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.dark-theme .subject-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Course name styling */
+.dark-theme .subject-block .course-name {
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.dark-theme .subject-block .teacher-name {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Class and room badges */
+.dark-theme .subject-block .class-badge {
+    background-color: rgba(79, 70, 229, 0.2);
+    color: #818cf8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.dark-theme .subject-block .room-badge {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.dark-theme .subject-block .room-badge .change-room-link {
+    color: #93c5fd;
+    opacity: 0.6;
+    margin-left: 4px;
+    font-size: 0.75rem;
+    transition: opacity 0.2s;
+}
+
+.dark-theme .subject-block .room-badge .change-room-link:hover {
+    opacity: 1;
+}
+
+/* Course colors in dark theme - matching screenshot colors */
+.dark-theme .subject-block.course-color-1 {
+    background-color: #1e3a8a;
+    border-left: 3px solid #3b82f6;
+}
+
+.dark-theme .subject-block.course-color-2 {
+    background-color: #7a1a45;
+    border-left: 3px solid #ec4899;
+}
+
+.dark-theme .subject-block.course-color-3 {
+    background-color: #065f46;
+    border-left: 3px solid #10b981;
+}
+
+.dark-theme .subject-block.course-color-4 {
+    background-color: #18283b;
+    border-left: 3px solid #38bdf8;
+}
+
+.dark-theme .subject-block.course-color-5 {
+    background-color: #3f1c78;
+    border-left: 3px solid #a78bfa;
+}
+
+/* Link styling */
+.dark-theme .subject-block a.syllabus-link {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.dark-theme .subject-block a.syllabus-link:hover {
+    text-decoration: underline;
+}
+
+/* Legend styling */
+.dark-theme .legend {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #1e2133;
+    border-radius: 8px;
+    border: 1px solid #374151;
+}
+
+.dark-theme .legend h4 {
+    color: #e5e7eb;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.dark-theme .legend-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dark-theme .legend-table th,
+.dark-theme .legend-table td {
+    padding: 8px;
+    border-bottom: 1px solid #374151;
+    color: #e5e7eb;
+}
+
+.dark-theme .legend-table th {
+    text-align: left;
+    font-weight: 600;
+}
+
+.dark-theme .legend-color {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Empty cells */
+.dark-theme .timetable-table td span[style="color:#ccc;"] {
+    color: #4b5563 !important;
+    font-size: 18px;
+    display: block;
+    margin-top: 30px;
+}
+
+/* Class heading */
+.dark-theme .class-heading {
+    color: #e5e7eb;
+    font-size: 1.2rem;
+    margin: 20px 0 10px;
+    padding-left: 10px;
+    border-left: 4px solid #4f46e5;
+}
+
+/* Day filter form in dark theme */
+.dark-theme .card {
+    background-color: #1e2133;
+    border-color: #374151;
+}
+
+/* Card container */
+.dark-theme .timetable-card {
+    background-color: #111827;
+    border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.dark-theme .timetable-header {
+    background: linear-gradient(135deg, #111827, #1e2133);
+    border-bottom: 3px solid #4f46e5;
+}
+
+.dark-theme .timetable-header h2,
+.dark-theme .timetable-header p {
+    color: #e5e7eb;
+}
+
+.dark-theme .header-subtitle {
+    color: #9ca3af;
+}
+
+.dark-theme .header-academic-year {
+    color: #6b7280;
+}
